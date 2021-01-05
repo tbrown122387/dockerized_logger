@@ -10,14 +10,16 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PW}
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
       - ./mysql-data:/var/lib/mysql
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
   tws:
     build: .
     container_name: ib_logger_app
     volumes:
       - ./ib/IBController.ini:/root/IBController/IBController.ini
       - ./ib/jts.ini:/root/Jts/jts.ini
-#      - ./ibg.xml:/root/Jts/iggbnannndfejkbbohodaccckgnabhfnpjiefban/ibg.xml
     environment:
       TRADING_MODE: ${TWS_TRADING_MODE}
       TWSUSERID: ${TWS_USER_ID}
@@ -34,9 +36,9 @@ services:
   log_app:
     build: log_app/ib_client
     environment:
-      - IB_GATEWAY_URLNAME=tws
-      - IB_GATEWAY_URLPORT=4004
-      - MKT_DATA_TYPE=4
+      IB_GATEWAY_URLNAME: tws
+      IB_GATEWAY_URLPORT: 4004
+      MKT_DATA_TYPE: 4
     restart: on-failure
     depends_on:
       - tws
