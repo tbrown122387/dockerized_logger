@@ -399,16 +399,30 @@ void EminiLogger::tickDataOperation()
         contract.exchange = m_tick_writer.exchs(i);
         // TODO make the next few lines not futures specific
         contract.localSymbol = m_tick_writer.loc_syms(i);
-        m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
-                                     contract, 
-                                     "BidAsk", 
-                                     0, // nonzero means historical data too
-                                     true); // ignore size only changes?
-        m_pClient->reqTickByTickData(m_tick_writer.unique_trade_id(contract.localSymbol),
-                                     contract,
-                                     "Last",
-                                     0,
-                                     true); // I think this one is ignored
+        
+        // try requesting level 1 data
+        try{
+            m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
+                                         contract, 
+                                         "BidAsk", 
+                                         0, // nonzero means historical data too
+                                         true); // ignore size only changes?
+        }catch(const std::exception &exc){
+            std::cerr << exc.what() << "\n";
+        }
+
+        // try requesting last trade data
+        try{
+            m_pClient->reqTickByTickData(m_tick_writer.unique_trade_id(contract.localSymbol),
+                                         contract,
+                                         "Last",
+                                         0,
+                                         true); // I think this one is ignored
+        }catch( const std::exception& exc){
+            std::cerr << exc.what() << "\n";
+        }
+
+
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 

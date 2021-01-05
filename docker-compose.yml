@@ -29,7 +29,6 @@ services:
       XVFB_ARGS: -ac -screen 0 1024x768x16 +extension RANDR
     restart: always
     ports:
-      - 4003:4003
       - 5901:5900
     depends_on:
       - mydb
