@@ -399,9 +399,12 @@ void EminiLogger::tickDataOperation()
         contract.exchange = m_tick_writer.exchs(i);
         // TODO make the next few lines not futures specific
         contract.localSymbol = m_tick_writer.loc_syms(i);
-        
-        // try requesting level 1 data
+
+                
         try{
+            
+            if(m_printing) std::cout << "requesting bid/ask data for " << contract.symbol << "\n";
+
             m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
                                          contract, 
                                          "BidAsk", 
@@ -413,6 +416,9 @@ void EminiLogger::tickDataOperation()
 
         // try requesting last trade data
         try{
+
+            if(m_printing) std::cout << "requesting trade data for " << contract.symbol << "\n";
+
             m_pClient->reqTickByTickData(m_tick_writer.unique_trade_id(contract.localSymbol),
                                          contract,
                                          "Last",
@@ -1394,13 +1400,12 @@ void EminiLogger::historicalTicksLast(int reqId, const std::vector<HistoricalTic
 void EminiLogger::tickByTickAllLast(int reqId, int tickType, time_t time, double price, int size, const TickAttribLast& tickAttribLast, const std::string& exchange, const std::string& specialConditions) {
 
     if(m_printing){
-        std::cout << "\n\n";	
         printf("Tick-By-Tick. ReqId: %d, TickType: %s, Time: %s, Price: %g, Size: %d, PastLimit: %d, Unreported: %d, Exchange: %s, SpecialConditions:%s\n", 
             reqId, (tickType == 1 ? "Last" : "AllLast"), ctime(&time), price, size, tickAttribLast.pastLimit, tickAttribLast.unreported, exchange.c_str(), specialConditions.c_str());
+        std::cout << "trade for ticker: " << m_tick_writer.loc_sym_from_uid(reqId) << "\n";
     }
 
-    hft::TimePoint tp = hft::ClockType::from_time_t(time);
-    m_tick_writer.addTrade(tp, price, size, exchange, m_tick_writer.loc_sym_from_uid(reqId)); 
+    m_tick_writer.addTrade(hft::ClockType::now(), price, size, exchange, m_tick_writer.loc_sym_from_uid(reqId)); 
 
 }
 //! [tickbytickalllast]
@@ -1414,11 +1419,11 @@ void EminiLogger::tickByTickBidAsk(int reqId, time_t time, double bidPrice, doub
         std::cout << "\n\n";	
         printf("Tick-By-Tick. ReqId: %d, TickType: BidAsk, Time: %s, BidPrice: %g, AskPrice: %g, BidSize: %d, AskSize: %d, BidPastLow: %d, AskPastHigh: %d\n", 
             reqId, ctime(&time), bidPrice, askPrice, bidSize, askSize, tickAttribBidAsk.bidPastLow, tickAttribBidAsk.askPastHigh);
+        std::cout << "quote for ticker: " << m_tick_writer.loc_sym_from_uid(reqId) << "\n";
     }
 
     // store price info
-    hft::TimePoint tp = hft::ClockType::from_time_t(time);
-    m_tick_writer.addBidAsk(tp, bidPrice, askPrice, bidSize, askSize, m_tick_writer.loc_sym_from_uid(reqId));
+    m_tick_writer.addBidAsk(hft::ClockType::now(), bidPrice, askPrice, bidSize, askSize, m_tick_writer.loc_sym_from_uid(reqId));
 
 }
 //! [tickbytickbidask]
