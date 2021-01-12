@@ -97,8 +97,9 @@ bool EminiLogger::connect(const char *host, int port, int clientId)
 		printf( "Cannot connect to %s:%d clientId:%d\n", m_pClient->host().c_str(), m_pClient->port(), clientId);
 
 	// send it over to start requesting data 
+	// There is the possibility that function calls made prior to this time could be dropped by TWS	
 	//m_state = ST_REALTIMEBARS;
-	m_state = ST_TICKDATAOPERATION; 
+	//m_state = ST_TICKDATAOPERATION; 
     
     return bRes;
 }
@@ -414,8 +415,9 @@ void EminiLogger::tickDataOperation()
             std::cerr << exc.what() << "\n";
         }
 
-        // try requesting last trade data
-        try{
+	//No more than 1 tick-by-tick request can be made for the same instrument within 15 seconds.
+        std::this_thread::sleep_for(std::chrono::seconds(16));
+	try{
 
             if(m_printing) std::cout << "requesting trade data for " << contract.symbol << "\n";
 
@@ -427,12 +429,10 @@ void EminiLogger::tickDataOperation()
         }catch( const std::exception& exc){
             std::cerr << exc.what() << "\n";
         }
-
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+           
     }
-
-	m_state = ST_TICKDATAOPERATION_ACK;
+    
+    m_state = ST_TICKDATAOPERATION_ACK;
 }
 
 void EminiLogger::tickOptionComputationOperation()
@@ -683,7 +683,7 @@ void EminiLogger::nextValidId( OrderId orderId)
     //! [nextvalidid]
 
     //m_state = ST_TICKOPTIONCOMPUTATIONOPERATION; 
-    //m_state = ST_TICKDATAOPERATION; 
+    m_state = ST_TICKDATAOPERATION; 
     //m_state = ST_REQTICKBYTICKDATA; 
     //m_state = ST_REQHISTORICALTICKS; 
     //m_state = ST_CONTFUT; 
