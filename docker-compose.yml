@@ -38,7 +38,7 @@ services:
     build: log_app/ib_client
     environment:
       IB_GATEWAY_URLNAME: tws
-      IB_GATEWAY_URLPORT: 4003
+      IB_GATEWAY_URLPORT: ${TWS_PORT}
       MKT_DATA_TYPE: 4
     restart: on-failure
     depends_on:

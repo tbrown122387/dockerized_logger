@@ -14,10 +14,6 @@
 const unsigned MAX_ATTEMPTS = 50;
 const unsigned SLEEP_TIME = 10;
 
-/* IMPORTANT: always use your paper trading account. The code below will submit orders as part of the demonstration. */
-/* IB will not be responsible for accidental executions on your live account. */
-/* Any stock or option symbols displayed are for illustrative purposes only and are not intended to portray a recommendation. */
-/* Before contacting our API support team please refer to the available documentation. */
 int main(int argc, char** argv)
 {
 	//const char* host = argc > 1 ? argv[1] : "";
@@ -25,7 +21,6 @@ int main(int argc, char** argv)
 	int port = argc > 2 ? atoi(argv[2]) : 0;
 	if (port <= 0)
 		port = atoi(std::getenv("IB_GATEWAY_URLPORT"));
-		//port = 4002;//1;
 	const char* connectOptions = argc > 3 ? argv[3] : "";
 	int clientId = 0;
 
