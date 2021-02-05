@@ -108,20 +108,20 @@ void EminiLogger::processMessages()
 	switch (m_state) {
 
 		case ST_REQTRADEDATA:
-			reqAllTradeData(); // changes m_state to ST_REQPNL
+			reqAllTradeData(); // changes m_state to ST_REQORDERDATA
 			break;
-        	case ST_REQORDERDATA:
-            		// need to wait more than 15 seconds to request two things
-            		// from the same symbol
+        case ST_REQORDERDATA:
+            // need to wait more than 15 seconds to request two things
+            // from the same symbol
 			std::this_thread::sleep_for(std::chrono::seconds(16));
-            		reqAllOrderData(); // changes m_state to ST_IDLE
+            reqAllOrderData(); // changes m_state to ST_IDLE
 			break;
-        	case ST_IDLE:
-            		doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
-		        break;
-        	case ST_UNSUBSCRIBE:
-            		unsubscribeAll();   // does not change m_state
-            		break; // 
+        case ST_IDLE:
+            doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
+		    break;
+        case ST_UNSUBSCRIBE:
+            unsubscribeAll();   // does not change m_state
+            break; // 
 	}
 
 	m_osSignal.waitForSignal();
@@ -159,7 +159,7 @@ void EminiLogger::reqAllTradeData()
 
         if(m_printing) std::cout << "requesting bid/ask data for " << contract.symbol << "\n";
 
-        m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
+        m_pClient->reqTickByTickData(m_tick_writer.unique_trade_id(contract.localSymbol), 
                                      contract, 
                                      "Last", 
                                      0, // nonzero means historical data too
