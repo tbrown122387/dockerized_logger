@@ -103,25 +103,21 @@ void EminiLogger::processMessages()
 	// between checking actual/desired position and checking pnl
     // here's a chart:
 	
-    // ST_REQTRADEDATA -> ST_REQORDERDATA -> (ST_IDLE) -> ST_UNSUBSCRIBE 
+    // ST_REQ_DATA -> (ST_IDLE) -> ST_UNSUBSCRIBE 
 
 	switch (m_state) {
 
-		case ST_REQTRADEDATA:
-			reqAllTradeData(); // changes m_state to ST_REQORDERDATA
+		case ST_REQ_DATA:
+            		// NB: need to wait more than 15 seconds to request two things
+            		// from the same symbol
+            		reqAllData(); // changes m_state to ST_IDLE
 			break;
-        case ST_REQORDERDATA:
-            // need to wait more than 15 seconds to request two things
-            // from the same symbol
-			std::this_thread::sleep_for(std::chrono::seconds(16));
-            reqAllOrderData(); // changes m_state to ST_IDLE
-			break;
-        case ST_IDLE:
-            doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
-		    break;
-        case ST_UNSUBSCRIBE:
-            unsubscribeAll();   // does not change m_state
-            break; // 
+        	case ST_IDLE:
+            		doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
+		    	break;
+        	case ST_UNSUBSCRIBE:
+            		unsubscribeAll();   // does not change m_state
+            		break; // 
 	}
 
 	m_osSignal.waitForSignal();
@@ -140,14 +136,24 @@ void EminiLogger::connectAck() {
 void EminiLogger::unsubscribeAll(){
     for(unsigned int i = 0; i < m_tick_writer.size(); ++i){
         std::string ticker = m_tick_writer.loc_syms(i); 
-        m_pClient->cancelMktData(m_tick_writer.unique_order_id(ticker));
+        //m_pClient->cancelMktData(m_tick_writer.unique_order_id(ticker));
         m_pClient->cancelMktData(m_tick_writer.unique_trade_id(ticker));
     }
 }
 
 
-void EminiLogger::reqAllTradeData()
+   
+    m_state = ST_REQORDERDATA;
+
+}
+
+
+void EminiLogger::reqAllData()
 {
+
+    // TODO: manually edit this function to change your requests to either trade or order data
+    // also have to change the unsubscribeAll function above
+
     for(unsigned int i = 0; i < m_tick_writer.size(); ++i){
         Contract contract;
         contract.symbol  = m_tick_writer.syms(i);
@@ -157,7 +163,13 @@ void EminiLogger::reqAllTradeData()
         // TODO make the next few lines not futures specific
         contract.localSymbol = m_tick_writer.loc_syms(i);
 
-        if(m_printing) std::cout << "requesting bid/ask data for " << contract.symbol << "\n";
+        if(m_printing) std::cout << "requesting trade or order data for " << contract.symbol << "\n";
+
+//        m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
+//                                     contract, 
+//                                     "BidAsk", 
+//                                     0, // nonzero means historical data too
+//                                     true); // ignore size only changes
 
         m_pClient->reqTickByTickData(m_tick_writer.unique_trade_id(contract.localSymbol), 
                                      contract, 
@@ -165,33 +177,8 @@ void EminiLogger::reqAllTradeData()
                                      0, // nonzero means historical data too
                                      true); // ignore size only changes?
     }
-    
-    m_state = ST_REQORDERDATA;
-
-}
-
-
-void EminiLogger::reqAllOrderData()
-{
-
-    for(unsigned int i = 0; i < m_tick_writer.size(); ++i){
-        Contract contract;
-        contract.symbol  = m_tick_writer.syms(i);
-        contract.secType = m_tick_writer.sec_types(i);
-        contract.currency = m_tick_writer.currencies(i);
-        contract.exchange = m_tick_writer.exchs(i);
-        // TODO make the next few lines not futures specific
-        contract.localSymbol = m_tick_writer.loc_syms(i);
-
-        if(m_printing) std::cout << "requesting bid/ask data for " << contract.symbol << "\n";
-
-        m_pClient->reqTickByTickData(m_tick_writer.unique_order_id(contract.localSymbol), 
-                                     contract, 
-                                     "BidAsk", 
-                                     0, // nonzero means historical data too
-                                     true); // ignore size only changes?
-    }
-    
+  
+    // change state  
     m_state = ST_IDLE;
 
 }

@@ -20,8 +20,7 @@ class EClientSocket;
 
 enum State {
     ST_CONNECT,
-    ST_REQTRADEDATA,
-    ST_REQORDERDATA,
+    ST_REQ_DATA,
     ST_IDLE,
     ST_CLOSEOUT,
     ST_UNSUBSCRIBE
@@ -46,8 +45,7 @@ public:
 	bool isConnected() const;
 
 private:
-    void reqAllTradeData();
-    void reqAllOrderData();
+    void reqAllData();
     void doNothing();
     void unsubscribeAll();
 public:
