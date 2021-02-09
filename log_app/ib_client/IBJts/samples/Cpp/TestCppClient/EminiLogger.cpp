@@ -142,12 +142,6 @@ void EminiLogger::unsubscribeAll(){
 }
 
 
-   
-    m_state = ST_REQORDERDATA;
-
-}
-
-
 void EminiLogger::reqAllData()
 {
 
@@ -187,7 +181,7 @@ void EminiLogger::reqAllData()
 void EminiLogger::nextValidId( OrderId orderId)
 {
     // the starting state after connection is achieved
-    m_state = ST_REQTRADEDATA; 
+    m_state = ST_REQ_DATA; 
 }
 
 
