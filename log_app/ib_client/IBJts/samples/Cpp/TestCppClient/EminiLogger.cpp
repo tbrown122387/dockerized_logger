@@ -47,7 +47,7 @@ EminiLogger::EminiLogger() :
     , m_extraAuth(false)
     , m_printing(true)
     , m_tick_writer("/usr/src/app/IBJts/samples/Cpp/TestCppClient/mysql_config.txt", 
-                    "/usr/src/app/IBJts/samples/Cpp/TestCppClient/tickers.txt",
+                   "/usr/src/app/IBJts/samples/Cpp/TestCppClient/tickers.txt",
                     10, // auto flush every ten ticks
                     true, // printing
                     true) // reconnect to db    
@@ -107,17 +107,28 @@ void EminiLogger::processMessages()
 
 	switch (m_state) {
 
+        case ST_CONNECT:
+            m_state = ST_CONNECT_ACK;
+            break;
+        case ST_CONNECT_ACK:
+            break; // let nextValidId() change m_state
 		case ST_REQ_DATA:
-            		// NB: need to wait more than 15 seconds to request two things
-            		// from the same symbol
-            		reqAllData(); // changes m_state to ST_IDLE
+            // from the same symbol
+            reqAllData(); 
+            m_state = ST_REQ_DATA_ACK;
 			break;
-        	case ST_IDLE:
-            		doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
-		    	break;
-        	case ST_UNSUBSCRIBE:
-            		unsubscribeAll();   // does not change m_state
-            		break; // 
+        case ST_REQ_DATA_ACK:
+            m_state = ST_IDLE;
+            break;
+        case ST_IDLE:
+            doNothing(); // changes m_state to ST_UNSUBSCRIBE only in rare circumstance
+            break;
+        case ST_UNSUBSCRIBE:
+            unsubscribeAll();   
+            m_state = ST_UNSUBSCRIBE_ACK;
+            break; 
+        case ST_UNSUBSCRIBE_ACK:
+              break;  
 	}
 
 	m_osSignal.waitForSignal();
@@ -148,6 +159,8 @@ void EminiLogger::reqAllData()
     // TODO: manually edit this function to change your requests to either trade or order data
     // also have to change the unsubscribeAll function above
 
+    if(m_printing) std::cout << "now requesting data...\n";
+
     for(unsigned int i = 0; i < m_tick_writer.size(); ++i){
         Contract contract;
         contract.symbol  = m_tick_writer.syms(i);
@@ -171,15 +184,12 @@ void EminiLogger::reqAllData()
                                      0, // nonzero means historical data too
                                      true); // ignore size only changes?
     }
-  
-    // change state  
-    m_state = ST_IDLE;
-
 }
 
 
 void EminiLogger::nextValidId( OrderId orderId)
 {
+    if(m_printing) std::cout << "inside nextValidId()...\n";
     // the starting state after connection is achieved
     m_state = ST_REQ_DATA; 
 }

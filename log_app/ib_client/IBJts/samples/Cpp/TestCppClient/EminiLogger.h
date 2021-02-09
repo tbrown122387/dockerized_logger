@@ -20,10 +20,12 @@ class EClientSocket;
 
 enum State {
     ST_CONNECT,
+    ST_CONNECT_ACK,
     ST_REQ_DATA,
+    ST_REQ_DATA_ACK,
     ST_IDLE,
-    ST_CLOSEOUT,
-    ST_UNSUBSCRIBE
+    ST_UNSUBSCRIBE,
+    ST_UNSUBSCRIBE_ACK
 };
 
 class EminiLogger : public EWrapper
