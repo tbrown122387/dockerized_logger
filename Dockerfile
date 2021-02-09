@@ -7,7 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/New_York
 ENV TWS_MAJOR_VRSN=978
 ENV IBC_VERSION=3.8.2
-ENV IBC_INI=/root/IBController/IBController.ini
+#ENV IBC_INI=/root/IBController/IBController.ini
+ENV IBC_INI=/root/IBController/config.ini
 ENV IBC_PATH=/opt/IBController
 ENV TWS_PATH=/root/Jts
 ENV TWS_CONFIG_PATH=/root/Jts
@@ -40,7 +41,7 @@ RUN rm /opt/TWS/ibgateway-stable-standalone-linux-x64.sh
 ENV DISPLAY :0
 
 # Below files copied during build to enable operation without volume mount
-COPY ./ib/IBController.ini /root/IBController/IBController.ini
+#COPY ./ib/IBController.ini /root/IBController/IBController.ini
 RUN mkdir -p /root/Jts/
 COPY ./ib/jts.ini /root/Jts/jts.ini
 

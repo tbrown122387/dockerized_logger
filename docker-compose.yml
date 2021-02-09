@@ -20,8 +20,9 @@ services:
     build: .
     container_name: ib_logger_app
     volumes:
-      - ./ib/IBController.ini:/root/IBController/IBController.ini
+        #- ./ib/IBController.ini:/root/IBController/IBController.ini
       - ./ib/jts.ini:/root/Jts/jts.ini
+      - ./IBCLinux-3.8.2/config.ini:/root/IBController/config.ini
     environment:
       TRADING_MODE: ${TWS_TRADING_MODE}
       TWSUSERID: ${TWS_USER_ID}
